@@ -1,1 +1,10 @@
 /* CSS Content */
+body {
+    margin: 0px;
+}
+#canvas {
+    z-index: 0;
+    margin: none;
+    left: 0;
+    top: 0;
+}
