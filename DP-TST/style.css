@@ -2,9 +2,18 @@
 body {
     margin: 0px;
 }
+
 #canvas {
     z-index: 0;
+    position: absolute;
     margin: none;
     left: 0;
     top: 0;
+}
+
+#popupCanvas {
+    z-index: 1;
+    position: fixed;
+    margin: none;
+
 }

@@ -2,16 +2,24 @@
 
 // Initial Values
 
+
 var squareSize = 5;
 var canvas = document.getElementById("canvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 var ctx = canvas.getContext("2d");
 
+var popupCanvas = document.getElementById("popupCanvas");
+popupCanvas.width = window.innerWidth;
+popupCanvas.height = window.innerHeight;
+var popCtx = popupCanvas.getContext("2d");
+
 // ++++++++++++++
 // Global Values
 
 var MouseX, MouseY;
+var entityArray = new Array(0);
+var gameState = 0;
 
 // ++++++++++++++
 
@@ -20,6 +28,14 @@ var MouseX, MouseY;
 // var animator = setInterval(MainLoop, 33); // ~30fps
 var animator = setInterval(MainLoop, 25); // 40fps
 // var animator = setInterval(MainLoop, 20); // 50fps
+
+document.addEventListener("resize", frameResized);
+function frameResized() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    popupCanvas.width = window.innerWidth;
+    popupCanvas.height = window.innerHeight;
+}
 
 document.addEventListener("mousemove", mousePos);
 function mousePos() {
@@ -163,19 +179,19 @@ class entity {
     }
 }
 
-var ent = new entity(50,50,0,0,0,0,0,0,0,0,0,0);
-ent.pixArray.push(new pixel(0,0,0,0,0,200,0,0));
-ent.pixArray.push(new pixel(0,0,0,0,1,200,200,200));
-ent.pixArray.push(new pixel(0,0,0,0,2,200,200,200));
-ent.pixArray.push(new pixel(0,0,0,0,-1,200,200,200));
-ent.pixArray.push(new pixel(0,0,0,1,0,100,100,200));
-ent.pixArray.push(new pixel(0,0,0,2,0,100,100,200));
-ent.pixArray.push(new pixel(0,0,0,0,-2,200,200,200));
-ent.pixArray.push(new pixel(0,0,0,3,0,100,250,100));
-ent.pixArray.push(new pixel(0,0,0,3,-1,100,100,200));
-ent.draw();
+// var ent = new entity(50,50,0,0,0,0,0,0,0,0,0,0);
+// ent.pixArray.push(new pixel(0,0,0,0,0,200,0,0));
+// ent.pixArray.push(new pixel(0,0,0,0,1,200,200,200));
+// ent.pixArray.push(new pixel(0,0,0,0,2,200,200,200));
+// ent.pixArray.push(new pixel(0,0,0,0,-1,200,200,200));
+// ent.pixArray.push(new pixel(0,0,0,1,0,100,100,200));
+// ent.pixArray.push(new pixel(0,0,0,2,0,100,100,200));
+// ent.pixArray.push(new pixel(0,0,0,0,-2,200,200,200));
+// ent.pixArray.push(new pixel(0,0,0,3,0,100,250,100));
+// ent.pixArray.push(new pixel(0,0,0,3,-1,100,100,200));
+// ent.draw();
 
-ent.reassessStats();
+// ent.reassessStats();
 
 // var pixArray = new Array(0);
 // for (var i = 0; i < 10; i++) {
@@ -188,11 +204,29 @@ ent.reassessStats();
 // pixArray[0].R = 200;
 
 
-function MainLoop () {
-    // pixArray[0].draw();
-    ent.Rotation += Math.PI/30
-    // ent.LocationX = MouseX;
-    // ent.LocationY = MouseY;
-    ent.draw();
+function MainLoop() {
+    switch (gameState) {
+        case 0: // Primary Game Loop
+
+            break;
+        case 1: // Ship Creator Popup (Needs icon)
+            
+            break;
+    }
+}
+createEntityFromXML(1);
+
+function createEntityFromXML (id) {
+    var xml = loadXMLDoc("ships.xml");
 }
 
+function loadXMLDoc(docName) {
+    var Connect = new XMLHttpRequest();
+    // Define which file to open and
+    // send the request.
+    Connect.open("GET", docName, false);
+    Connect.setRequestHeader("Content-Type", "text/xml");
+    Connect.send(null);
+    // Place the response in an XML document.
+    return Connect.responseXML;
+}
