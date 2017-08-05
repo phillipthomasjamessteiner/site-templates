@@ -2,8 +2,8 @@
 
 // Initial Values
 
+var squareSize = 10;
 
-var squareSize = 5;
 var canvas = document.getElementById("canvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -23,14 +23,14 @@ var gameState = 0;
 
 // ++++++++++++++
 
-
+var AiLooping = setInterval(AiLoop, 250);
 
 // var animator = setInterval(MainLoop, 33); // ~30fps
 var animator = setInterval(MainLoop, 25); // 40fps
 // var animator = setInterval(MainLoop, 20); // 50fps
 
 document.addEventListener("resize", frameResized);
-function frameResized() {
+function frameResized(e) {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     popupCanvas.width = window.innerWidth;
@@ -38,14 +38,14 @@ function frameResized() {
 }
 
 document.addEventListener("mousemove", mousePos);
-function mousePos() {
+function mousePos(e) {
     MouseX = event.clientX;
     MouseY = event.clientY;
 }
 
 document.addEventListener("keydown", keyPressed);
-function keyPressed() {
-    console.log(event.keyCode);
+function keyPressed(e) {
+    // console.log(event.keyCode);
     switch (event.keyCode) {
         case 32: // Space Key Pressed
 
@@ -98,8 +98,8 @@ class pixel {
         drawX = (this.OffsetX * squareSize);
         drawY = (this.OffsetY * squareSize);
         var realX, realY;
-        realX = drawX*Math.cos(this.rotation) - drawY*Math.sin(this.rotation) + this.locationX;
-        realY = drawX*Math.sin(this.rotation) + drawY*Math.cos(this.rotation) + this.locationY;
+        realX = drawX*Math.cos(this.rotation) + drawY*Math.sin(this.rotation) + this.locationX;
+        realY = drawX*Math.sin(this.rotation) - drawY*Math.cos(this.rotation) + this.locationY;
         ctx.translate(realX, realY);
         ctx.rotate(this.rotation);
         ctx.fillStyle = String("rgb(" + this.r + "," + this.g + "," + this.b + ")");
@@ -123,7 +123,7 @@ class derbis {
 
 class entity {
     constructor (LocationX, LocationY, VelocityX, VelocityY, AccelerationX, AccelerationY, 
-                Rotation, RotVelocity, RotAcceleration, DamageOutput, Thrust, TurnSpeed) {
+                Rotation, RotVelocity, RotAcceleration, DamageOutput, Thrust, TurnSpeed, Faction) {
         this.locationX = LocationX;
         this.locationY = LocationY;
         this.velocityX = VelocityX;
@@ -136,6 +136,9 @@ class entity {
         this.damOut = DamageOutput;
         this.thrust = Thrust;
         this.turnSpeed = TurnSpeed;
+        this.faction = Faction;
+
+        this.mass = 1;
         this.pixArray = new Array(0);
     }
 
@@ -147,7 +150,6 @@ class entity {
     set LocationY(value) {this.locationY = value;}
 
     draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
         for (var p = 0; p < this.pixArray.length; p++) {
             this.pixArray[p].LocationX = this.locationX;
             this.pixArray[p].LocationY = this.locationY;
@@ -156,17 +158,27 @@ class entity {
         }
     }
 
+    calcPhysics() {
+        this.locationX += this.velocityX;
+        this.locationY += this.velocityY;
+        this.velocityX += this.accelX;
+        this.velocityY += this.accelY;
+        this.rotation += this.rotVelocity;
+        this.rotVelocity += this.rotAccel;
+    }
+
     reassessStats() {
         var sumR = 0; var sumG = 0; var sumB = 0;
         for (var p = 0; p < this.pixArray.length; p++) {
-            sumR += this.pixArray[p].R;
-            sumG += this.pixArray[p].G;
-            sumB += this.pixArray[p].B;
+            sumR += parseInt(this.pixArray[p].R);
+            sumG += parseInt(this.pixArray[p].G);
+            sumB += parseInt(this.pixArray[p].B);
         }
-        this.damOut = sumR;
-        this.thrust = sumG;
-        this.turnSpeed = sumB;
-        console.log(sumR);
+        this.damOut = sumR/100;
+        this.thrust = sumG/100;
+        this.turnSpeed = sumB/100;
+        this.mass = (sumR + sumG + sumB)/100;
+        console.log("Damage:" + this.damOut + " -Thrust:" + this.thrust + " -turnSpeed:" + this.turnSpeed + " -Mass:" + this.mass);
     }
 
     deathCheck() {
@@ -178,33 +190,35 @@ class entity {
         }
     }
 }
+/*
 
-// var ent = new entity(50,50,0,0,0,0,0,0,0,0,0,0);
-// ent.pixArray.push(new pixel(0,0,0,0,0,200,0,0));
-// ent.pixArray.push(new pixel(0,0,0,0,1,200,200,200));
-// ent.pixArray.push(new pixel(0,0,0,0,2,200,200,200));
-// ent.pixArray.push(new pixel(0,0,0,0,-1,200,200,200));
-// ent.pixArray.push(new pixel(0,0,0,1,0,100,100,200));
-// ent.pixArray.push(new pixel(0,0,0,2,0,100,100,200));
-// ent.pixArray.push(new pixel(0,0,0,0,-2,200,200,200));
-// ent.pixArray.push(new pixel(0,0,0,3,0,100,250,100));
-// ent.pixArray.push(new pixel(0,0,0,3,-1,100,100,200));
-// ent.draw();
+    var ent = new entity(50,50,0,0,0,0,0,0,0,0,0,0);
+    ent.pixArray.push(new pixel(0,0,0,0,0,200,0,0));
+    ent.pixArray.push(new pixel(0,0,0,0,1,200,200,200));
+    ent.pixArray.push(new pixel(0,0,0,0,2,200,200,200));
+    ent.pixArray.push(new pixel(0,0,0,0,-1,200,200,200));
+    ent.pixArray.push(new pixel(0,0,0,1,0,100,100,200));
+    ent.pixArray.push(new pixel(0,0,0,2,0,100,100,200));
+    ent.pixArray.push(new pixel(0,0,0,0,-2,200,200,200));
+    ent.pixArray.push(new pixel(0,0,0,3,0,100,250,100));
+    ent.pixArray.push(new pixel(0,0,0,3,-1,100,100,200));
+    ent.draw();
 
-// ent.reassessStats();
+    ent.reassessStats();
 
-// var pixArray = new Array(0);
-// for (var i = 0; i < 10; i++) {
-//     var px = new pixel(0,0,0,20,20,200,0,0);
-//     pixArray.push(px);
-// }
+    var pixArray = new Array(0);
+    for (var i = 0; i < 10; i++) {
+        var px = new pixel(0,0,0,20,20,200,0,0);
+        pixArray.push(px);
+    }
 
-// pixArray[0].LocationX = 300;
-// pixArray[0].LocationY = 300;
-// pixArray[0].R = 200;
-
+    pixArray[0].LocationX = 300;
+    pixArray[0].LocationY = 300;
+    pixArray[0].R = 200;
+*/
 
 function MainLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     switch (gameState) {
         case 0: // Primary Game Loop
 
@@ -213,20 +227,56 @@ function MainLoop() {
             
             break;
     }
-}
-createEntityFromXML(1);
 
-function createEntityFromXML (id) {
-    var xml = loadXMLDoc("ships.xml");
+    for (var e = 0; e < entityArray.length; e++) { // Cycle through entities
+        entityArray[e].calcPhysics();
+        entityArray[e].draw();
+    }
 }
 
-function loadXMLDoc(docName) {
-    var Connect = new XMLHttpRequest();
-    // Define which file to open and
-    // send the request.
-    Connect.open("GET", docName, false);
-    Connect.setRequestHeader("Content-Type", "text/xml");
-    Connect.send(null);
-    // Place the response in an XML document.
-    return Connect.responseXML;
+function AiLoop() {
+
+}
+
+// createEntityFromXML(1, 300, 300, 0, 0);
+
+function createEntityFromXML (id, startX, startY, startRot, factionID) {
+    getXML();
+    function getXML() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            // console.log("stateChangeTo:" + this.readyState + "   Status:" + this.status);
+            if (this.readyState == 4 && this.status == 0) { // change required status to 200 for web access
+                // return xhttp.responseXML;
+                createEntity(xhttp);
+            }
+        }
+        xhttp.open("GET", "file:///C:/Users/gday/Documents/School/site-templates/DP-TST/ships.xml", true);
+        xhttp.send();
+    }
+    function createEntity(xml) {
+        var xmlDoc = xml.responseXML;
+
+        var ent = new entity(startX, startY, 0, 0, 0, 0, startRot, 0, 0, 0, 0, 0, factionID);
+        
+        var ship;
+        var ships = xmlDoc.getElementsByTagName("ship");
+        for (var s = 0; s < ships.length; s++) {
+            if (ships[s].getAttribute('id') == id) {
+                ship = ships[s];
+            }
+        }
+        var pixels = ship.getElementsByTagName("pixel");
+        for (var p = 0; p < pixels.length; p++) {
+            var oX = pixels[p].getElementsByTagName("offsetX")[0].firstChild.nodeValue;
+            var oY = pixels[p].getElementsByTagName("offsetY")[0].firstChild.nodeValue;
+            var r = pixels[p].getElementsByTagName("R")[0].firstChild.nodeValue;
+            var g = pixels[p].getElementsByTagName("G")[0].firstChild.nodeValue;
+            var b = pixels[p].getElementsByTagName("B")[0].firstChild.nodeValue;
+            ent.pixArray.push(new pixel(0,0,0,oX,oY,r,g,b));
+            // console.log(oX + " " + oY + " " + r + " " + g + " " + b);
+        }
+        ent.reassessStats();
+        entityArray.push(ent);
+    }
 }

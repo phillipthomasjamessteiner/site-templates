@@ -1,38 +1,49 @@
-<?xml version="1.0" encoding="utf-8"?>
-
 <ships>
 	<ship id="1">
 		<name>Test Ship</name>
 		<pixels>
 			<pixel>
 				<offsetX>0</offsetX>
-				<offsetY>0</offsetY>
+				<offsetY>1</offsetY>
 				<R>200</R>
-			<G>200</G>
-			<B>200</B>
+				<G>200</G>
+				<B>200</B>
 			</pixel>
 			<pixel>
 				<offsetX>0</offsetX>
-				<offsetY>1</offsetY>
+				<offsetY>2</offsetY>
 				<R>255</R>
 				<G>0</G>
 				<B>0</B>
 			</pixel>
 			<pixel>
 				<offsetX>0</offsetX>
-				<offsetY>-1</offsetY>
+				<offsetY>0</offsetY>
 				<R>200</R>
 				<G>200</G>
 				<B>250</B>
 			</pixel>
 			<pixel>
+				<offsetX>1</offsetX>
+				<offsetY>0</offsetY>
+				<R>0</R>
+				<G>100</G>
+				<B>250</B>
+			</pixel>
+			<pixel>
+				<offsetX>-1</offsetX>
+				<offsetY>0</offsetY>
+				<R>0</R>
+				<G>100</G>
+				<B>250</B>
+			</pixel>
+			<pixel>
 				<offsetX>0</offsetX>
-				<offsetY>-2</offsetY>
+				<offsetY>-1</offsetY>
 				<R>0</R>
 				<G>200</G>
 				<B>0</B>
 			</pixel>
 		</pixels>
 	</ship>
-
 </ships>
