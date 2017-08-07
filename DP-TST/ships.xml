@@ -3,15 +3,15 @@
 		<name>Test Ship</name>
 		<pixels>
 			<pixel>
-				<offsetX>0</offsetX>
-				<offsetY>1</offsetY>
+				<offsetX>1</offsetX>
+				<offsetY>0</offsetY>
 				<R>200</R>
 				<G>200</G>
 				<B>200</B>
 			</pixel>
 			<pixel>
-				<offsetX>0</offsetX>
-				<offsetY>2</offsetY>
+				<offsetX>2</offsetX>
+				<offsetY>0</offsetY>
 				<R>255</R>
 				<G>0</G>
 				<B>0</B>
@@ -24,15 +24,8 @@
 				<B>250</B>
 			</pixel>
 			<pixel>
-				<offsetX>1</offsetX>
-				<offsetY>0</offsetY>
-				<R>0</R>
-				<G>100</G>
-				<B>250</B>
-			</pixel>
-			<pixel>
-				<offsetX>-1</offsetX>
-				<offsetY>0</offsetY>
+				<offsetX>0</offsetX>
+				<offsetY>1</offsetY>
 				<R>0</R>
 				<G>100</G>
 				<B>250</B>
@@ -40,6 +33,13 @@
 			<pixel>
 				<offsetX>0</offsetX>
 				<offsetY>-1</offsetY>
+				<R>0</R>
+				<G>100</G>
+				<B>250</B>
+			</pixel>
+			<pixel>
+				<offsetX>-1</offsetX>
+				<offsetY>0</offsetY>
 				<R>0</R>
 				<G>200</G>
 				<B>0</B>
