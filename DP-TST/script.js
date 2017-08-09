@@ -4,9 +4,8 @@
 
 var squareSize = 2; // pixel size (in pixels) (Default = 2.5px)
 var spaceFriction = 0.001; // Velocity reduction per physics update
-var rotationFriction = Math.PI/2000;
-var velocitySnapTol = 0.002; // Min Velocity to snap to 0
-var rotationSnapTol = Math.PI/1500;
+var velocitySnapTol = 0.02; // Min Velocity to snap to 0
+var minVelocityToBreak = 0.1; // Minimum velocity required to break;
 var borderEjectAccel = (squareSize/8); // Acceleration of ejection from borders
 var idealRotScaler = 10; // Divides ideal speed of rotation (Bigger numbers mean slower rotation)
 
@@ -56,9 +55,9 @@ function mousePos(event) {
 }
 document.addEventListener("mousemove", mousePos);
 
-var thrustFlags = new Array(4);
+var thrustFlags = new Array(5);
 for (var i = 0; i < thrustFlags.length; i++) {thrustFlags[i] = 0;}
-function keyPressed() {
+function keyPressed(event) {
     // console.log(event.keyCode + "Pressed");
     switch (event.keyCode) {
         case 87: // W
@@ -73,9 +72,12 @@ function keyPressed() {
         case 68: // D
             thrustFlags[3] = 1;
             break;
+        case 16: // Shift
+            thrustFlags[4] = 1;
+            break;
     }
 }
-function keyReleased() {
+function keyReleased(event) {
     // console.log(event.keyCode + "Released");
     switch (event.keyCode) {
         case 87: // W
@@ -89,6 +91,9 @@ function keyReleased() {
             break;
         case 68: // D
             thrustFlags[3] = 0;
+            break;
+        case 16: // Shift
+            thrustFlags[4] = 0;
             break;
     }
 }
@@ -153,7 +158,7 @@ class derbis {
 
 class entity {
     constructor (LocationX, LocationY, VelocityX, VelocityY, AccelerationX, AccelerationY, 
-                Rotation, RotVelocity, RotAcceleration, DamageOutput, Thrust, TurnSpeed, Faction, AiState) {
+                Rotation, TargetRotation, DamageOutput, Thrust, TurnSpeed, Faction, AiState) {
         this.locationX = LocationX;
         this.locationY = LocationY;
         this.velocityX = VelocityX;
@@ -161,8 +166,7 @@ class entity {
         this.accelX = AccelerationX;
         this.accelY = AccelerationY;
         this.rotation = Rotation;
-        this.rotVelocity = RotVelocity;
-        this.rotAccel = RotAcceleration;
+        this.targetRotation = TargetRotation;
         this.damOut = DamageOutput;
         this.thrust = Thrust;
         this.turnSpeed = TurnSpeed;
@@ -221,6 +225,19 @@ class entity {
         this.UDLRAccelY[1] = Math.sin(this.rotation + (Math.PI))*tAcc;
     }
 
+    breakThrust(percentThrust) {
+        if (this.velocityX > minVelocityToBreak) {
+            this.velocityX -= this.massyThrust;
+        } else if (this.velocityX < -minVelocityToBreak) {
+            this.velocityX += this.massyThrust;
+        }
+        if (this.velocityY > minVelocityToBreak) {
+            this.velocityY -= this.massyThrust;
+        } else if (this.velocityY < -minVelocityToBreak) {
+            this.velocityY += this.massyThrust;
+        }
+    }
+
     calcRotFromMouse() {
         var mouseRot = Math.atan((MouseY-this.locationY) / (MouseX-this.locationX));
         if (MouseX < this.locationX) {
@@ -246,9 +263,27 @@ class entity {
         } else {
             this.rotation -= this.massyRotSpeed;
         }
+        // console.log(Math.abs(targetRotVelocity) + " out of " + this.massyRotSpeed);
+    }
+    
+    calcRotToTarget(rotTar) {
+        var rotDiffOne = ((rotTar + Math.PI*2) - (this.rotation % (Math.PI * 2))) % (Math.PI * 2);
+        var rotDiffTwo = (rotTar - (this.rotation % (Math.PI * 2)) - Math.PI*2) % (Math.PI * 2);
+        var targetRotVelocity;
+        if (rotDiffOne < Math.abs(rotDiffTwo)) {
+            targetRotVelocity = rotDiffOne / idealRotScaler;
+        } else {
+            targetRotVelocity = rotDiffTwo / idealRotScaler;
+        }
 
-        console.log(Math.abs(targetRotVelocity) + " out of " + this.massyRotSpeed);
-        
+        if (Math.abs(targetRotVelocity) < this.massyRotSpeed) {
+            // this.rotation = mouseRot;
+            this.rotation += targetRotVelocity;
+        } else if (targetRotVelocity > 0) {
+            this.rotation += this.massyRotSpeed;
+        } else {
+            this.rotation -= this.massyRotSpeed;
+        }
     }
 
     calcThrust() {
@@ -256,6 +291,8 @@ class entity {
         if (thrustFlags[1] == 1) {this.thrustLeft(1);} else {this.thrustLeft(0);}
         if (thrustFlags[2] == 1) {this.thrustBackwards(1);} else {this.thrustBackwards(0);}
         if (thrustFlags[3] == 1) {this.thrustRight(1);} else {this.thrustRight(0);}
+
+        if (thrustFlags[4] == 1) {this.breakThrust();} // Break
 
         
         if (this.locationX > canvas.width) {this.velocityX -= borderEjectAccel;}
@@ -267,6 +304,8 @@ class entity {
     calcPhysics() {
         if (this.aiState == 0) { // Only if entity is user controlled
             this.calcRotFromMouse();
+        } else {
+            calcRotToTarget()
         }
         this.calcThrust();
         this.accelX = this.UDLRAccelX[0] + this.UDLRAccelX[1] + this.UDLRAccelX[2] + this.UDLRAccelX[3];
@@ -403,7 +442,7 @@ function createEntityFromXML (id, startX, startY, startRot, factionID, AiState) 
     function createEntity(xml) {
         var xmlDoc = xml.responseXML;
 
-        var ent = new entity(startX, startY, 0, 0, 0, 0, startRot, 0, 0, 0, 0, 0, factionID, AiState);
+        var ent = new entity(startX, startY, 0, 0, 0, 0, startRot, startRot, 0, 0, 0, factionID, AiState);
         if (AiState == 0) {
             userControlledEntity = ent;
         }
